@@ -89,12 +89,75 @@ const newDeck = function () {
   return deck
 }
 
-const myCards = newDeck()
-console.log(myCards.cards)
-myCards.shuffle()
-console.log(myCards.cards)
+
+const init = function () {
+  const deck = newDeck()
+  deck.shuffle()
+
+  const game = {
+    completed: false,
+    playerHand: {
+      hand: [],
+      getHandValue: function () {
+        let total = 0
+        this.playerHand.hand.forEach(function (card) {
+          total += card.value
+        })
+        return total
+      }
+    },
+    dealerHand: {
+      hand: [],
+      getHandValue: function () {
+        // let total = 0
+        // this.hand.forEach(function (card) {
+        //   total += card.value
+        // })
+        // return total
+      }
+    },
+    dealCards: function () {
+      const card1 = deck.cards.pop() 
+      const card2 = deck.cards.pop()
+      this.playerHand.hand.push(card1)
+      this.playerHand.hand.push(card2)      
+
+      const card3 = deck.cards.pop() 
+      const card4 = deck.cards.pop()
+      this.dealerHand.hand.push(card3)
+      this.dealerHand.hand.push(card4)
+    },
+    renderHand: function (user, hand) {
+      hand.forEach(function (card) {
+        const h2 = document.createElement('h2')
+        h2.textContent = card.suit
+        const userId = '#' + user
+        // remove children before new render
+        document.querySelector(userId).appendChild(h2)
+        const p = document.createElement('p')
+        p.textContent = card.face
+        document.querySelector(userId).appendChild(p)
+      })
+    }
+  }
+
+  const deal = document.querySelector('#deal')
+  deal.addEventListener('click', function () {
+    if (deck.cardsLeft() > 0) {
+      game.dealCards()
+      game.renderHand('dealer-hand', game.dealerHand.hand)
+      game.renderHand('player-hand', game.playerHand.hand)
+    }
+  })
+}
 
 
+
+const startButton = document.querySelector('#start')
+startButton.addEventListener('click', function () {
+  console.log('Game started!')
+  init()
+})
 
 
 
