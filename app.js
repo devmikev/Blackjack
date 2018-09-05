@@ -196,6 +196,8 @@ let init = function () {
       }
 
       this.clearHands()
+      game.renderHand('player-hand', game.playerHand.hand)
+
       this.dealerHand.hand.forEach(function (card) {
         const userId = '#' + 'dealer-hand'
         const face = card.face
