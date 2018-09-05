@@ -1,6 +1,6 @@
 const newDeck = function () {
   const suits = ['Clubs', 'Diamonds', 'Hearts', 'Spades']
-  const faces = [{face: 'Ace',value: 1},
+  const faces = [{face: 'Ace',value: 11},
     {
       face: '2',
       value: 2
@@ -89,10 +89,11 @@ const newDeck = function () {
   return deck
 }
 
-
-const init = function () {
-  const deck = newDeck()
+let init = function () {
+  console.log('Game started!')
+  let deck = newDeck()
   deck.shuffle()
+
 
   const game = {
     completed: false,
@@ -100,7 +101,7 @@ const init = function () {
       hand: [],
       getHandValue: function () {
         let total = 0
-        this.playerHand.hand.forEach(function (card) {
+        this.hand.forEach(function (card) {
           total += card.value
         })
         return total
@@ -109,11 +110,11 @@ const init = function () {
     dealerHand: {
       hand: [],
       getHandValue: function () {
-        // let total = 0
-        // this.hand.forEach(function (card) {
-        //   total += card.value
-        // })
-        // return total
+        let total = 0
+        this.hand.forEach(function (card) {
+          total += card.value
+        })
+        return total
       }
     },
     dealCards: function () {
@@ -121,43 +122,170 @@ const init = function () {
       const card2 = deck.cards.pop()
       this.playerHand.hand.push(card1)
       this.playerHand.hand.push(card2)      
-
+  
       const card3 = deck.cards.pop() 
       const card4 = deck.cards.pop()
       this.dealerHand.hand.push(card3)
       this.dealerHand.hand.push(card4)
     },
     renderHand: function (user, hand) {
-      hand.forEach(function (card) {
-        const h2 = document.createElement('h2')
-        h2.textContent = card.suit
+      // const dealerValue = this.dealerHand.getHandValue()
+      // document.querySelector('#dealer-value').textContent = dealerValue
+      const playerValue = this.playerHand.getHandValue()
+      document.querySelector('#player-value').textContent = playerValue
+      if (user === 'dealer-hand') {
         const userId = '#' + user
-        // remove children before new render
-        document.querySelector(userId).appendChild(h2)
-        const p = document.createElement('p')
-        p.textContent = card.face
-        document.querySelector(userId).appendChild(p)
+
+  
+        const h3 = document.createElement('h3')
+        h3.textContent = `${this.dealerHand.hand[0].face} - ${this.dealerHand.hand[0].suit}`
+        document.querySelector(userId).appendChild(h3)
+      } else {
+        hand.forEach(function (card) {
+          const userId = '#' + user
+          const face = card.face
+          const suit = card.suit
+    
+          const h3 = document.createElement('h3')
+          h3.textContent = `${face} - ${suit}`
+          document.querySelector(userId).appendChild(h3)
+        })
+      } 
+    },
+    clearHands: function () {
+      // console.log('cleared')
+      document.querySelectorAll('h3').forEach(function (card) {
+        card.remove()
       })
+      document.querySelector('#dealer-value').textContent = ''
+    },
+    hit: function (userId) {
+      const hitCard = deck.cards.pop()
+      this[userId].hand.push(hitCard)
+      this.clearHands()
+      game.renderHand('dealer-hand', game.dealerHand.hand)
+      game.renderHand('player-hand', game.playerHand.hand)
+      this.gameLogic()
+      console.log(deck.cards.length)
+    },
+    stay: function () {
+      let dealerHand = this.dealerHand.getHandValue()
+      let playerHand = this.playerHand.getHandValue()
+      
+      while (dealerHand < 17) {
+        const hitCard = deck.cards.pop()
+        this.dealerHand.hand.push(hitCard)
+        dealerHand = this.dealerHand.getHandValue()
+
+        if (dealerHand > 21) {
+          let index = this.dealerHand.hand.findIndex(function (card) {
+            return card.value === 11
+          })
+          if (index > -1) {
+            this.dealerHand.hand[index].value = 1
+            this.clearHands()
+            game.renderHand('dealer-hand', game.dealerHand.hand)
+            game.renderHand('player-hand', game.playerHand.hand)
+            this.stay()
+          }
+        }
+
+        this.clearHands()
+        game.renderHand('dealer-hand', game.dealerHand.hand)
+        game.renderHand('player-hand', game.playerHand.hand)
+      }
+
+      this.clearHands()
+      this.dealerHand.hand.forEach(function (card) {
+        const userId = '#' + 'dealer-hand'
+        const face = card.face
+        const suit = card.suit
+  
+        const h3 = document.createElement('h3')
+        h3.textContent = `${face} - ${suit}`
+        document.querySelector(userId).appendChild(h3)
+      })
+
+      const dealerValue = this.dealerHand.getHandValue()
+      document.querySelector('#dealer-value').textContent = dealerValue
+      
+      if (dealerHand === playerHand) {
+        alert('It\'s a tie!')
+      } else if (playerHand > dealerHand) {
+        alert('Player wins!')
+      } else if (dealerHand > 21) {
+        alert('Player wins!')
+      } else if (dealerHand > playerHand) {
+        alert('Dealer wins!')
+      }
+    },
+    gameLogic: function () {
+      let index = this.playerHand.hand.findIndex(function (value) {
+        return value === 11
+      })
+      // console.log(index)
+      if (this.playerHand.getHandValue() === 21) {
+        this.stay()
+      } else if (this.playerHand.getHandValue() > 21){
+        let index = this.playerHand.hand.findIndex(function (card) {
+          return card.value === 11
+        })
+        if (index > -1) {
+          this.playerHand.hand[index].value = 1
+          this.clearHands()
+          game.renderHand('dealer-hand', game.dealerHand.hand)
+          game.renderHand('player-hand', game.playerHand.hand)
+          this.gameLogic()
+        } else {
+          alert ('You lose!')
+        }
+      }
+       
     }
   }
 
-  const deal = document.querySelector('#deal')
-  deal.addEventListener('click', function () {
-    if (deck.cardsLeft() > 0) {
+// INITIALIZE first deal
+  game.clearHands()
+  game.dealCards()
+  game.renderHand('dealer-hand', game.dealerHand.hand)
+  game.renderHand('player-hand', game.playerHand.hand)
+  game.gameLogic()
+
+
+  document.querySelector('#new-game').addEventListener('click', function () {
+    // console.log('Game restarted!')
+    game.playerHand.hand = []
+    game.dealerHand.hand = []
+    game.clearHands()
+    // let deck = newDeck()
+    // deck.shuffle()
+    if (deck.cards.length > 0) {
       game.dealCards()
       game.renderHand('dealer-hand', game.dealerHand.hand)
       game.renderHand('player-hand', game.playerHand.hand)
+      game.gameLogic()
+    } else {
+      console.log('Out of cards!')
     }
+  })
+
+  document.querySelector('#hit').addEventListener('click', function () {
+    console.log('hit!')
+    game.hit('playerHand')
+  })
+
+  document.querySelector('#stay').addEventListener('click', function () {
+    console.log('Stay!')
+    game.stay()
   })
 }
 
 
 
-const startButton = document.querySelector('#start')
-startButton.addEventListener('click', function () {
-  console.log('Game started!')
-  init()
-})
+
+
+init()
+
 
 
 

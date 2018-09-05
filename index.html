@@ -5,15 +5,29 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>Black Jack</title>
+  <style>
+    body {
+      background-color: black;
+      color: white;
+    }
+    h2 {
+      margin-right: 5px;
+      display: inline;
+    }
+  </style>
 </head>
 <body>
   <h1>Blackjack</h1>
   <div></div>
-  <button id="start">Start</button>
-  <button id="stop">Restart</button>
-  <div id="dealer-hand"></div>
-  <div id="player-hand"></div>
-  <button id="deal">Deal cards</button>
+  <button id="new-game">Deal cards</button>
+  <div id="dealer-hand">
+    <h2>Dealer hand: <span id="dealer-value"></span></h2>
+  </div>
+  <div id="player-hand">
+    <h2>Player hand: <span id="player-value"></span></h2>
+  </div>
+  <button id="hit">Hit</button>
+  <button id="stay">Stay</button>
 
   
 </body>
